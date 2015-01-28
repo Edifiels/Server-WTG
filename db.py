@@ -1,3 +1,4 @@
+import math
 from sqlalchemy import create_engine
 import tornado.ioloop
 import tornado.web
@@ -8,12 +9,14 @@ class SQLHandler(tornado.web.RequestHandler):
     def get(self, value=None):
         count = self.get_argument("count", None, True)
         start = self.get_argument("start", None, True)
-
+        lat = 53.191936
+        lng = 45.015698
         engine = create_engine("mysql+pymysql://root:root@localhost:3306/wtg?charset=utf8", echo=True)
 
         lim = str(start) + "," + str(count)
+        gip = math.sqrt(math.pow(lat,2) + math.pow(lng,2))
         connection = engine.connect()
-        result = connection.execute("SELECT * FROM point LIMIT " + lim)
+        result = connection.execute("SELECT * FROM point ORDER BY ABS(SQRT(lat*lat + lng*lng) - "+ str(gip) +") LIMIT " + lim)
 
         json_products = []
 
