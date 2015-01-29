@@ -9,14 +9,20 @@ class SQLHandler(tornado.web.RequestHandler):
     def get(self, value=None):
         count = self.get_argument("count", None, True)
         start = self.get_argument("start", None, True)
-        lat = 53.191936
-        lng = 45.015698
+        lat = self.get_argument("lat", None, True)
+        lng = self.get_argument("lng", None, True)
+        selection = self.get_argument("selection", None, True)
+
         engine = create_engine("mysql+pymysql://root:root@localhost:3306/wtg?charset=utf8", echo=True)
 
+        where = ""
+        if selection:
+            where = " WHERE point_class = '" + selection + "'"
+
         lim = str(start) + "," + str(count)
-        gip = math.sqrt(math.pow(lat,2) + math.pow(lng,2))
+        gip = math.sqrt(math.pow(float(lat),2) + math.pow(float(lng),2))
         connection = engine.connect()
-        result = connection.execute("SELECT * FROM point ORDER BY ABS(SQRT(lat*lat + lng*lng) - "+ str(gip) +") LIMIT " + lim)
+        result = connection.execute("SELECT * FROM point " + where + " ORDER BY ABS(SQRT(lat*lat + lng*lng) - "+ str(gip) +") LIMIT " + lim)
 
         json_products = []
 
